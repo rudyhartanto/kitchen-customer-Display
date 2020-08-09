@@ -95,87 +95,114 @@
 	<script>
     function procFinishLine(id){
       //0= new,1= finishpacking, 2= finishdelivery, 3= cancel
-      alert("masuk"+id);
+      $(document).ready(function(){
+        $.ajax({
+          url:"http://localhost:3000/api/update_transaction_detail/"+id+"/1",
+          type:"GET",
+          success:function(response) {
+          //document.getElementById("total_items").value=response;
+            alert("http://localhost:3000/api/update_transaction_detail/"+id+"/1");
+           // location.reload(); 
+           
+         },
+          error:function(){
+            alert("error");
+       }
+      });
+      });
     }
     function procUpdateStatus(strukid,status){
       //0= new,1= finishpacking, 2= finishdelivery, 3= cancel
       alert("masuk"+strukid);
     }
-		$(document).ready(function(){
-      
-      
+  </script>
+  
 
-			function retrievedata(offset,limit,page){
-				$.getJSON('http://localhost:3000/api/getAllTransaction/'+offset+'/'+limit, function(json_data){
-					console.log(JSON.stringify(json_data));
-					  var items = "";
-            
-					  $.each( json_data['response'], function( key, val ) {
-						items += '<div class="card shadow mb-4">'+
-									'<a href="#collapseCardExample1" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample1">' +
-											'<h6 class="m-0 font-weight-bold text-primary">'+val['transid']+'</h6> '+
-									'</a>';
-						var prodcode		= val['prodcode'];
-						var prodname		= val['prodname'];
-						var qty				  = val['qty'];
-						var layanan			= val['layanan'];
-            var id          = val['id'];
-						
-						var lst_prodcode	= prodcode.split(',');
-						var lst_id	      = id.split(',');
-						var lst_prodname	= prodname.split(',');
-						var lst_qty			= qty.split(',');
-						var lst_layanan		= layanan.split(',');
-							items  += ' <div class="collapse show" id="collapseCardExample2">'+
-									  '<div class="card-body"><table width="100%" class="table table-striped">';
-						for(let i = 0; i < lst_prodname.length; i++){ 
-							items  += '<tr style="border-bottom: 2px solid #0000;">'+
-                        '<td>'+lst_prodname[i] +'</td>'+
-                        '<td>'+lst_qty[i]+'</td>'+
-                        '<td> '+lst_layanan[i]+'</td>'+
-                        '<td width="10%" ><a href="#" onClick = "procFinishLine('+lst_id[i]+')">' +
-                        '<i class="fa fa-thumbs-up"></i>'+
-                        '</a></td></tr>';
+  <script>
+    
+    var opKitchen = {}
+    //Declare variable global Jika ada kalo ngak ada kosongin aja;
+    {opKitchen.utils=function(){
+      var loop = 0;
+      return {
+        attach:function (){			
+          $(document).ready(function(){
+            setInterval(function() {
+              opKitchen.utils.retrievedata(0,2,1);
+              opKitchen.utils.retrievedata(2,2,2);
+              opKitchen.utils.retrievedata(4,2,3);
+              if(loop == 50){
+                location.reload(); 
+              }
+              loop++;
+            }, 3000);
+          });
+        },
+        retrievedata:function(offset,limit,page){
+          $.getJSON('http://localhost:3000/api/getAllTransaction/'+offset+'/'+limit, function(json_data){
+              console.log(JSON.stringify(json_data));
+                var items = "";
+                
+                $.each( json_data['response'], function( key, val ) {
+                items += '<div class="card shadow mb-4">'+
+                      '<a href="#collapseCardExample1" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample1">' +
+                          '<h6 class="m-0 font-weight-bold text-primary">'+val['transid']+'</h6> '+
+                      '</a>';
+                var prodcode		= val['prodcode'];
+                var prodname		= val['prodname'];
+                var qty				  = val['qty'];
+                var layanan			= val['layanan'];
+                var id          = val['id'];
+                var status      = val['status'];
+                
+                var lst_prodcode	= prodcode.split(',');
+                var lst_id	      = id.split(',');
+                var lst_prodname	= prodname.split(',');
+                var lst_qty			= qty.split(',');
+                var lst_layanan		= layanan.split(',');
+                var lst_status		= status.split(',');
 
-						}
-            
-            var linkFinishStruk  = "procUpdateStatus('"+val['transid']+"',1)";
-            var linkDeliverStruk = "procUpdateStatus('"+val['transid']+"',2)";
-            var linkCancelOrder  = "procUpdateStatus('"+val['transid']+"',3)";
+                  items  += ' <div class="collapse show" id="collapseCardExample2">'+
+                        '<div class="card-body"><table width="100%" class="table table-striped">';
+                for(let i = 0; i < lst_prodname.length; i++){ 
+                  items  += '<tr style="border-bottom: 2px solid #0000;">'+
+                            '<td>'+lst_prodname[i] +'</td>'+
+                            '<td>'+lst_qty[i]+'</td>'+
+                            '<td> '+lst_layanan[i]+'('+lst_status[i]+')</td>'+
+                            '<td width="10%" ><a href="#" onClick = "procFinishLine('+lst_id[i]+')">' +
+                            '<i class="fa fa-thumbs-up"></i>'+
+                            '</a></td></tr>';
 
-						items += '</table></div>';
-            items += '<div class="col-log-12"><div class="row">'+
-                      '<a href="#" onClick = "'+linkFinishStruk+'" class="btn btn-primary  col-lg-4">' +
-                        '<i class="fa fa-thumbs-up"></i> Finish</a>'+
-                        '<a href="#" onClick = "'+linkDeliverStruk+'" class="btn btn-success col-lg-4">' +
-                        '<i class="fa fa-check"></i> Delivered</a><a href="#" onClick = "'+linkCancelOrder+'" class="btn btn-google col-lg-4">' +
-                        '<i class="fa fa-ban"></i> Cancel</a></div></div>';
-            items +='</div></div>' ;
-					  });
-					 
-					  $("#page"+page).html(items);
-				});
-			};
+                }
+                
+                var linkFinishStruk  = "procUpdateStatus('"+val['transid']+"',1)";
+                var linkDeliverStruk = "procUpdateStatus('"+val['transid']+"',2)";
+                var linkCancelOrder  = "procUpdateStatus('"+val['transid']+"',3)";
 
-			
-			
-			//retrievedata(0,2,1);
+                items += '</table></div>';
+                items += '<div class="col-log-12"><div class="row">'+
+                          '<a href="#" onClick = "'+linkFinishStruk+'" class="btn btn-primary  col-lg-4">' +
+                            '<i class="fa fa-thumbs-up"></i> Finish</a>'+
+                            '<a href="#" onClick = "'+linkDeliverStruk+'" class="btn btn-success col-lg-4">' +
+                            '<i class="fa fa-check"></i> Delivered</a><a href="#" onClick = "'+linkCancelOrder+'" class="btn btn-google col-lg-4">' +
+                            '<i class="fa fa-ban"></i> Cancel</a></div></div>';
+                items +='</div></div>' ;
+                });
+              
+                $("#page"+page).html(items);
+            });
+        },
+        updatestatusline:function(id){
 
-      
-			var loop = 0;
-			setInterval(function() {
-				retrievedata(0,2,1);
-				retrievedata(2,2,2);
-				retrievedata(4,2,3);
-				if(loop == 50){
-					location.reload(); 
-				}
-				loop++;
-			}, 3000);
-      
-		})
+        }
+      }
+    }()}
 
-	</script>
+
+    window.onLoad		= opKitchen.utils.attach();
+    
+		
+  </script>
 
 </body>
 
