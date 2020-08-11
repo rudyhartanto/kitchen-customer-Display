@@ -113,7 +113,21 @@
     }
     function procUpdateStatus(strukid,status){
       //0= new,1= finishpacking, 2= finishdelivery, 3= cancel
-      alert("masuk"+strukid);
+      $(document).ready(function(){
+        $.ajax({
+          url:"http://localhost:3000/api/update_transaction_header/"+strukid+"/"+status,
+          type:"GET",
+          success:function(response) {
+          //document.getElementById("total_items").value=response;
+            alert("http://localhost:3000/api/update_transaction_header/"+strukid+"/"+status);
+           // location.reload(); 
+           
+         },
+          error:function(){
+            alert("error");
+       }
+      });
+      });
     }
   </script>
   
@@ -142,11 +156,13 @@
           $.getJSON('http://localhost:3000/api/getAllTransaction/'+offset+'/'+limit, function(json_data){
               console.log(JSON.stringify(json_data));
                 var items = "";
-                
+                var today= new Date();                
                 $.each( json_data['response'], function( key, val ) {
+                  var transdate = new Date(val ['entrydate'] );   
                 items += '<div class="card shadow mb-4">'+
                       '<a href="#collapseCardExample1" class="d-block card-header py-3" data-toggle="collapse" role="button" aria-expanded="true" aria-controls="collapseCardExample1">' +
-                          '<h6 class="m-0 font-weight-bold text-primary">'+val['transid']+'</h6> '+
+                          '<h4 class="large font-weight-bold">'+val['transid']+' <span class="float-right">'+  opKitchen.utils.dayBetween(transdate,today) +'</span></h4>' +
+            
                       '</a>';
                 var prodcode		= val['prodcode'];
                 var prodname		= val['prodname'];
@@ -163,10 +179,21 @@
                 var lst_status		= status.split(',');
 
                   items  += ' <div class="collapse show" id="collapseCardExample2">'+
-                        '<div class="card-body"><table width="100%" class="table table-striped">';
+                        '<div class="card-body"><table width="100%" class="table">';
                 for(let i = 0; i < lst_prodname.length; i++){ 
-                  items  += '<tr style="border-bottom: 2px solid #0000;">'+
-                            '<td>'+lst_prodname[i] +'</td>'+
+
+                  if(lst_status[i] == 0){
+                    items  += '<tr style="border: 2px solid #0000;color:#000;">';
+                  }
+                  else if(lst_status[i] == 1){
+                    items  += '<tr class="btn-warning" style="border: 2px solid #0000;color:#000;">';
+                  }else if (lst_status[i] == 2){
+                    items  += '<tr class="btn-primary" style="border: 2px solid #0000;color:#000;">';
+                  }else{
+                    items  += '<tr class="btn-danger" style="border: 2px solid #0000;color:#000;">';
+                  }
+
+                  items  += '<td>'+lst_prodname[i] +'</td>'+
                             '<td>'+lst_qty[i]+'</td>'+
                             '<td> '+lst_layanan[i]+'('+lst_status[i]+')</td>'+
                             '<td width="10%" ><a href="#" onClick = "procFinishLine('+lst_id[i]+')">' +
@@ -194,6 +221,28 @@
         },
         updatestatusline:function(id){
 
+        },
+        dayBetween : function( date1, date2 ) {
+          //Get 1 day in milliseconds
+          var one_day=1000*60*60*24;
+
+          // Convert both dates to milliseconds
+          var date1_ms = date1.getTime();
+          var date2_ms = date2.getTime();
+
+          // Calculate the difference in milliseconds
+          var difference_ms = date2_ms - date1_ms;
+          //take out milliseconds
+          difference_ms = difference_ms/1000;
+          var seconds = Math.floor(difference_ms % 60);
+          difference_ms = difference_ms/60; 
+          var minutes = Math.floor(difference_ms % 60);
+          difference_ms = difference_ms/60; 
+          var hours = Math.floor(difference_ms % 24);  
+          var days = Math.floor(difference_ms/24);
+          
+         // return days + ' days, ' + hours + ' hours, ' + minutes + ' minutes, and ' + seconds + ' seconds';
+          return  hours+':'+minutes+':'+seconds;
         }
       }
     }()}
